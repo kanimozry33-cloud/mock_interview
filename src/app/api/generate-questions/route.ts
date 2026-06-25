@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unexpected response format' }, { status: 500 });
     }
 
-    const questions: InterviewQuestion[] = JSON.parse(content.text);
+    const raw = content.text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+    const questions: InterviewQuestion[] = JSON.parse(raw);
     return NextResponse.json({ questions });
   } catch (e) {
     console.error('Question generation error:', e);

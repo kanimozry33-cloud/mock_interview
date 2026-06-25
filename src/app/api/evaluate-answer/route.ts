@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unexpected response format' }, { status: 500 });
     }
 
-    const evaluation = JSON.parse(content.text);
+    const raw = content.text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+    const evaluation = JSON.parse(raw);
     return NextResponse.json(evaluation);
   } catch (e) {
     console.error('Evaluation error:', e);
