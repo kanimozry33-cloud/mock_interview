@@ -6,12 +6,9 @@ import { InterviewSetup } from '@/lib/types';
 const client = new Anthropic();
 
 function extractJSON(text: string): string {
-  const fenced = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/i);
-  if (fenced) return fenced[1].trim();
-
-  const objMatch = text.match(/\{[\s\S]*\}/);
-  if (objMatch) return objMatch[0];
-
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start !== -1 && end > start) return text.substring(start, end + 1);
   return text.trim();
 }
 
