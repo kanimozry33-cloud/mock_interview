@@ -5,6 +5,16 @@ import { InterviewSetup } from '@/lib/types';
 
 const client = new Anthropic();
 
+function extractJSON(text: string): string {
+  const fenced = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/i);
+  if (fenced) return fenced[1].trim();
+
+  const objMatch = text.match(/\{[\s\S]*\}/);
+  if (objMatch) return objMatch[0];
+
+  return text.trim();
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { question, intent, userAnswer, setup } = (await request.json()) as {
@@ -28,8 +38,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unexpected response format' }, { status: 500 });
     }
 
-    const raw = content.text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
-    const evaluation = JSON.parse(raw);
+    const raw = extractJSON(content.text);
+    let evaluation;
+    try {
+      evaluation = JSON.parse(raw);
+    } catch {
+      console.error('Raw Claude response:', content.text);
+      return NextResponse.json({ error: 'Invalid JSON from AI response' }, { status: 500 });
+    }
     return NextResponse.json(evaluation);
   } catch (e) {
     console.error('Evaluation error:', e);
